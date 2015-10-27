@@ -1,0 +1,19 @@
+{
+	"browser": true,
+	"camelcase": true,
+	"curly": true,
+	"eqeqeq": true,
+	"freeze": true,
+	"immed": true,
+	"latedef": "nofunc",
+	"laxcomma": true,
+	"maxparams": 8,
+	"newcap": true,
+	"noarg": true,
+	"node": true,
+	"predef": ["require"],
+	"smarttabs": true,
+	"strict": true,
+	"undef": true,
+	"unused": true
+}

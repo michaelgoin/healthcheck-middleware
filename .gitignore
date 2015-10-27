@@ -1,0 +1,5 @@
+*.zip
+*.log
+*node_modules
+obj
+bin
