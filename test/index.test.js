@@ -92,5 +92,4 @@ describe('healthcheck-middleware', function() {
 		
 	});
 
-
 });
