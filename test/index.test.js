@@ -105,31 +105,162 @@ describe('healthcheck-middleware', function() {
 			customChecks.should.have.been.calledOnce; 
 		});
 
-		it('responds with status 500 when error thrown', function() {
-			var customChecks = function() {
-				throw new Error('BOOM');
-			};
+		describe('when error thrown', function() {
+			it('responds with status 500', function() {
+				var customChecks = function() {
+					throw new Error('BOOM');
+				};
 
-			healthcheck({addChecks: customChecks})(req, res, next);
-			res.status.should.have.been.calledWith(500);
+				healthcheck({addChecks: customChecks})(req, res, next);
+				res.status.should.have.been.calledWith(500);
+			});
+
+			it('responds with json containing status:FAILURE and error message', function() {
+				var errorMessage = 'BOOM';
+				var expected = {
+					status: 'FAILURE',
+					message: errorMessage
+				};
+
+				var customChecks = function() {
+					throw new Error(errorMessage);
+				};
+
+				healthcheck({addChecks: customChecks})(req, res, next);
+				res.json.should.have.been.calledWith(expected);
+			});
 		});
 
-		it('responds with json containing status:FAILURE and error message when error thrown', function() {
-			var errorMessage = 'BOOM';
-			var expected = {
-				status: 'FAILURE',
-				message: errorMessage
-			};
+		describe('when fail called', function() {
+			it('responds with status 500', function() {
+				var customChecks = function(fail) {
+					fail();
+				};
 
-			var customChecks = function() {
-				throw new Error(errorMessage);
-			};
+				healthcheck({addChecks: customChecks})(req, res, next);
+				res.status.should.have.been.calledWith(500);
+			});
 
-			healthcheck({addChecks: customChecks})(req, res, next);
-			res.json.should.have.been.calledWith(expected);
+			
+			it('responds with json containing status:FAILURE and error message from parameter', function() {
+				var errorMessage = 'BOOM';
+				var expected = {
+					status: 'FAILURE',
+					message: errorMessage
+				};
+
+				var customChecks = function(fail) {
+					fail(new Error(errorMessage));
+				};
+
+				healthcheck({addChecks: customChecks})(req, res, next);
+				res.json.should.have.been.calledWith(expected);
+			});
+			
 		});
 
+		describe('when pass called', function() {
+			var uptime;
+			var memory;
+
+			beforeEach(function() {
+				uptime = 999;
+				memory = {
+					rss: 50, 
+					heapTotal: 51,
+					heapUsed: 52,
+				};
+
+				sinon.stub(process, 'uptime').returns(uptime);
+				sinon.stub(process, 'memoryUsage').returns(memory);
+			});
+
+			afterEach(function() {
+				uptime = undefined;
+				memory = undefined;
+
+				process.uptime.restore();
+				process.memoryUsage.restore();
+			});
+
+
+			it('responds with status 200', function() {
+				var customChecks = function(fail, pass) {
+					pass();
+				};
+
+				healthcheck({addChecks: customChecks})(req, res, next);
+				res.status.should.have.been.calledWith(200);
+			});
+
+			describe('without custom pass info', function() {
+				it('responds with json containing status:SUCCESS, uptime and memoryUsage', function() {
+					var expected = {
+						status: 'SUCCESS',
+						uptime: uptime,
+						memoryUsage: memory
+					};
+
+					var customChecks = function(fail, pass) {
+						pass();
+					};
+
+					healthcheck({addChecks: customChecks})(req, res, next);
+
+					res.json.should.have.been.calledWith(expected);
+				});
+			});
+
+			describe('with custom pass info', function() {
+				it('responds with json containing custom pass info + status:SUCCESS, uptime and memoryUsage', function() {
+					var customPassInfo = {
+						custom: 'yes'
+					};
+
+					var expected = {
+						custom: 'yes',
+						status: 'SUCCESS',
+						uptime: uptime,
+						memoryUsage: memory
+					};
+
+					var customChecks = function(fail, pass) {
+						pass(customPassInfo);
+					};
+
+					healthcheck({addChecks: customChecks})(req, res, next);
+
+					res.json.should.have.been.calledWith(expected);
+				});
+
+				it('responds with json containing custom pass info overrides of default values for status, uptime and memoryUsage', function() {
+					var customPassInfo = {
+						custom: 'yes',
+						status: 'YES',
+						uptime: 1000,
+						memoryUsage: 1001
+					};
+
+					var expected = {
+						custom: customPassInfo.custom,
+						status: customPassInfo.status,
+						uptime: customPassInfo.uptime,
+						memoryUsage: customPassInfo.memoryUsage
+					};
+
+					var customChecks = function(fail, pass) {
+						pass(customPassInfo);
+					};
+
+					healthcheck({addChecks: customChecks})(req, res, next);
+
+					res.json.should.have.been.calledWith(expected);
+				});
+			});
+		});
 	});
+
+	
 
 	describe('healthInfo', function() {
 		//var req, res, next;
