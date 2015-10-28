@@ -43,17 +43,22 @@ module.exports = function(options) {
 			passInfo.uptime = passInfo.uptime || process.uptime();
 			passInfo.memoryUsage = passInfo.memoryUsage || process.memoryUsage();
 
-			var message;
+			var info;
 			try {
-				message = healthInfo(passInfo);
+				info = healthInfo(passInfo) || {};
+
+				if(typeof info !== 'object') {
+					info = { message: info.toString() };
+				}
+
 			} catch(err) {
-				message = {
+				info = {
 					status: 'SUCCESS',
 					warning: util.format('%s: %s', errorMessages.HealthInfoError, err.message)
 				};
 			}
 
-			res.status(200).json(message);
+			res.status(200).json(info);
 		}
 	};
 };

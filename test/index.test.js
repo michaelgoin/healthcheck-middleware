@@ -15,7 +15,7 @@ chai.should();
 
 describe('healthcheck-middleware', function() {
 
-	describe('default', function() {
+	describe('options', function() {
 		var req, res, next;
 		var uptime;
 		var memory;
@@ -47,34 +47,57 @@ describe('healthcheck-middleware', function() {
 			process.memoryUsage.restore();
 		});
 		
-		it('responds with 200 status', function() {
-			healthcheck()(req, res, next);
-			res.status.should.have.been.calledWith(200);
+		describe('when not provided', function() {
+			it('responds with 200 status', function() {
+				healthcheck()(req, res, next);
+				res.status.should.have.been.calledWith(200);
+			});
+
+			it('responds with json containing successful status, uptime and memoryUsage', function() {
+				var expected = {
+					status: 'SUCCESS',
+					uptime: uptime,
+					memoryUsage: memory
+				};
+
+				healthcheck()(req, res, next);
+				res.json.should.have.been.calledWith(expected);
+			});
 		});
 
-		it('responds with json containing status:SUCCESS, uptime and memoryUsage', function() {
-			var expected = {
-				status: 'SUCCESS',
-				uptime: uptime,
-				memoryUsage: memory
-			};
-
-			healthcheck()(req, res, next);
-			res.json.should.have.been.calledWith(expected);
+		describe('when non-object provided', function() {
+			it('throws InvalidOptionsError', function() {
+				var check = function() {
+					healthcheck('woo');	
+				};
+				
+				check.should.Throw(errorMessages.InvalidOptionsError);
+			});
 		});
+		
+		describe('when empty object provided', function() {
+			it('responds with 200 status', function() {
+				healthcheck({})(req, res, next);
+				res.status.should.have.been.calledWith(200);
+			});
 
-
-		it('throws InvalidOptionsError if options parameter is not null and not an object', function() {
-			var check = function() {
-				healthcheck('woo');	
-			};
 			
-			check.should.Throw(errorMessages.InvalidOptionsError);
+			it('responds with json containing successful status, uptime and memoryUsage', function() {
+				var expected = {
+					status: 'SUCCESS',
+					uptime: uptime,
+					memoryUsage: memory
+				};
+
+				healthcheck({})(req, res, next);
+				res.json.should.have.been.calledWith(expected);
+			});
+			
 		});
 		
 	});
 
-	describe('addChecks', function() {
+	describe('options.addChecks', function() {
 		var req, res, next;
 
 		beforeEach(function() {
@@ -88,22 +111,24 @@ describe('healthcheck-middleware', function() {
 		afterEach(function() {
 			res = undefined;
 		});
-		
 
-		it('throws FunctionError if addChecks is not a function', function() {
-			var check = function() {
-				healthcheck({addChecks: 'blah'});	
-			};
-			
-			check.should.Throw(errorMessages.FunctionError);
+		describe('when non-function provided', function() {
+			it('throws FunctionError', function() {
+				var check = function() {
+					healthcheck({addChecks: 'blah'});	
+				};
+				
+				check.should.Throw(errorMessages.FunctionError);
+			});
 		});
 
+		describe('when function provided', function() {
+			it('executes provided function', function() {
+				var customChecks = sinon.spy();
+				healthcheck({addChecks: customChecks})(req, res, next);
 
-		it('executes provided addChecks', function() {
-			var customChecks = sinon.spy();
-			healthcheck({addChecks: customChecks})(req, res, next);
-
-			customChecks.should.have.been.calledOnce; 
+				customChecks.should.have.been.calledOnce; 
+			});
 		});
 
 		describe('when error thrown', function() {
@@ -116,7 +141,7 @@ describe('healthcheck-middleware', function() {
 				res.status.should.have.been.calledWith(500);
 			});
 
-			it('responds with json containing status:FAILURE and error message', function() {
+			it('responds with json containing failure status and error message', function() {
 				var errorMessage = 'BOOM';
 				var expected = {
 					status: 'FAILURE',
@@ -141,9 +166,8 @@ describe('healthcheck-middleware', function() {
 				healthcheck({addChecks: customChecks})(req, res, next);
 				res.status.should.have.been.calledWith(500);
 			});
-
 			
-			it('responds with json containing status:FAILURE and error message from parameter', function() {
+			it('responds with json containing failure status and error message from parameter', function() {
 				var errorMessage = 'BOOM';
 				var expected = {
 					status: 'FAILURE',
@@ -184,7 +208,6 @@ describe('healthcheck-middleware', function() {
 				process.memoryUsage.restore();
 			});
 
-
 			it('responds with status 200', function() {
 				var customChecks = function(fail, pass) {
 					pass();
@@ -195,7 +218,7 @@ describe('healthcheck-middleware', function() {
 			});
 
 			describe('without custom pass info', function() {
-				it('responds with json containing status:SUCCESS, uptime and memoryUsage', function() {
+				it('responds with json containing successful status, uptime and memoryUsage', function() {
 					var expected = {
 						status: 'SUCCESS',
 						uptime: uptime,
@@ -213,7 +236,7 @@ describe('healthcheck-middleware', function() {
 			});
 
 			describe('with custom pass info', function() {
-				it('responds with json containing custom pass info + status:SUCCESS, uptime and memoryUsage', function() {
+				it('responds with json containing custom pass info + successful status, uptime and memoryUsage', function() {
 					var customPassInfo = {
 						custom: 'yes'
 					};
@@ -234,7 +257,7 @@ describe('healthcheck-middleware', function() {
 					res.json.should.have.been.calledWith(expected);
 				});
 
-				it('responds with json containing custom pass info overrides of default values for status, uptime and memoryUsage', function() {
+				it('responds with json containing custom pass info overrides for status, uptime and memoryUsage', function() {
 					var customPassInfo = {
 						custom: 'yes',
 						status: 'YES',
@@ -263,7 +286,7 @@ describe('healthcheck-middleware', function() {
 
 	
 
-	describe('healthInfo', function() {
+	describe('options.healthInfo', function() {
 		var req, res, next;
 
 		beforeEach(function() {
@@ -277,37 +300,81 @@ describe('healthcheck-middleware', function() {
 		afterEach(function() {
 			res = undefined;
 		});
+
+		describe('when non-function provided', function() {
+			it('throws FunctionError', function() {
+				var check = function() {
+					healthcheck({healthInfo: 'blah'});	
+				};
+				
+				check.should.Throw(errorMessages.FunctionError);
+			});	
+		});
 		
-		it('throws FunctionError if healthInfo is not a function', function() {
-			var check = function() {
-				healthcheck({healthInfo: 'blah'});	
-			};
-			
-			check.should.Throw(errorMessages.FunctionError);
+		describe('when function provided', function() {
+			it('executes provided healthInfo', function() {
+				var customHealthInfo = sinon.spy();
+				healthcheck({healthInfo: customHealthInfo})(req, res, next);
+
+				customHealthInfo.should.have.been.calledOnce; 
+			});
+		});	
+
+		describe('when nothing returned', function() {
+			it('renders empty json', function() {
+				var customHealthInfo = function() {
+					return;
+				};
+
+				healthcheck({healthInfo: customHealthInfo})(req, res, next);
+
+				res.json.should.have.been.calledWith({});
+			});
 		});
 
-		it('executes provided healthInfo', function() {
-			var customHealthInfo = sinon.spy();
-			healthcheck({healthInfo: customHealthInfo})(req, res, next);
+		describe('when json returned', function() {
+			it('renders returned json', function() {
+				var returnData = {
+					whereAmI: 'no here',
+					status: 'YES',
+					uptime: 1000,
+					memoryUsage: 1001
+				};
 
-			customHealthInfo.should.have.been.calledOnce; 
+				var customHealthInfo = function() {
+					return returnData;
+				};
+
+				healthcheck({healthInfo: customHealthInfo})(req, res, next);
+
+				res.json.should.have.been.calledWith(returnData);
+			});
 		});
 
-		it('renders returned json', function() {
-			var returnData = {
-				whereAmI: 'no here',
-				status: 'YES',
-				uptime: 1000,
-				memoryUsage: 1001
-			};
+		describe('when string returned', function() {
+			it('renders json with { message: string }', function() {
+				var stringValue = 'my string value';
+				var customHealthInfo = function() {
+					return stringValue;
+				};
 
-			var customHealthInfo = function() {
-				return returnData;
-			};
+				healthcheck({healthInfo: customHealthInfo})(req, res, next);
 
-			healthcheck({healthInfo: customHealthInfo})(req, res, next);
+				res.json.should.have.been.calledWith({message: stringValue});
+			});
+		});
 
-			res.json.should.have.been.calledWith(returnData);
+		describe('when non-json/string returned', function() {
+			it('renders json with { message: returnedValue.toString() }', function() {
+				var returnValue = function() { return 'whaty?'; };
+				var customHealthInfo = function() {
+					return returnValue;
+				};
+
+				healthcheck({healthInfo: customHealthInfo})(req, res, next);
+
+				res.json.should.have.been.calledWith({message: returnValue.toString()});
+			});
 		});
 
 		describe('when error thrown', function() {
@@ -344,7 +411,7 @@ describe('healthcheck-middleware', function() {
 			});
 
 			
-			it('responds with json containing status:SUCCESS and warning message', function() {
+			it('responds with json containing successful status and warning message', function() {
 				var errorMessage = 'BOOM';
 				var expected = {
 					status: 'SUCCESS',
@@ -362,6 +429,4 @@ describe('healthcheck-middleware', function() {
 		});
 
 	});
-
-
 });
