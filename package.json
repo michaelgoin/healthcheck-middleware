@@ -4,7 +4,7 @@
   "description": "Express middleware for rendering a JSON healthcheck page.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha "
   },
   "repository": {
     "type": "git",
@@ -21,5 +21,11 @@
   "bugs": {
     "url": "https://github.com/abandoncomplexity/healthcheck-middleware/issues"
   },
-  "homepage": "https://github.com/abandoncomplexity/healthcheck-middleware#readme"
+  "homepage": "https://github.com/abandoncomplexity/healthcheck-middleware#readme",
+  "devDependencies": {
+    "chai": "^3.4.0",
+    "mocha": "^2.3.3",
+    "sinon": "^1.17.2",
+    "sinon-chai": "^2.8.0"
+  }
 }

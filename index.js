@@ -1,12 +1,14 @@
 'use strict';
 
 var util = require('util');
-
-var HealthInfoError = 'Healthcheck passed but there was an error in healthInfo';
-var FunctionError = 'Not a valid function';
+var errorMessages = require('./errorMessages.js');
 
 module.exports = function(options) {
 	options = options || {};
+
+	if(typeof options !== 'object') {
+		throw new Error(errorMessages.InvalidOptionsError);
+	}
 
 	var addChecks = options.addChecks || function (fail, pass) {
 		pass();
@@ -17,11 +19,11 @@ module.exports = function(options) {
 	};
 
 	if(typeof addChecks !== 'function') {
-		throw new Error(util.format('%s: %s', FunctionError, 'addChecks'));
+		throw new Error(util.format('%s: %s', errorMessages.FunctionError, 'addChecks'));
 	}
 
 	if(typeof healthInfo !== 'function') {
-		throw new Error(util.format('%s: %s', FunctionError, 'healthInfo'));
+		throw new Error(util.format('%s: %s', errorMessages.FunctionError, 'healthInfo'));
 	}
 
 	return function(req, res) {
@@ -39,13 +41,13 @@ module.exports = function(options) {
 			passInfo = passInfo || {};
 			passInfo.status = passInfo.status || 'SUCCESS';
 			passInfo.uptime = passInfo.uptime || process.uptime();
-			passInfo.memoryUsage = passInfo.uptime || process.memoryUsage();
+			passInfo.memoryUsage = passInfo.memoryUsage || process.memoryUsage();
 
 			var message;
 			try {
 				message = healthInfo(passInfo);
 			} catch(err) {
-				message = util.format('%s: %s', HealthInfoError, err.message);
+				message = util.format('%s: %s', errorMessages.HealthInfoError, err.message);
 			}
 
 			res.status(200).json(message);
