@@ -5,6 +5,7 @@
 var chai = require('chai');
 var sinon = require('sinon');
 var sinonChai = require('sinon-chai');
+var util = require('util');
 
 var healthcheck = require('..');
 var errorMessages = require('../errorMessages.js');
@@ -263,7 +264,19 @@ describe('healthcheck-middleware', function() {
 	
 
 	describe('healthInfo', function() {
-		//var req, res, next;
+		var req, res, next;
+
+		beforeEach(function() {
+			res = {
+				status: sinon.stub(),
+				json: sinon.stub()
+			};
+			res.status.returns(res);
+		});
+
+		afterEach(function() {
+			res = undefined;
+		});
 		
 		it('throws FunctionError if healthInfo is not a function', function() {
 			var check = function() {
@@ -271,6 +284,81 @@ describe('healthcheck-middleware', function() {
 			};
 			
 			check.should.Throw(errorMessages.FunctionError);
+		});
+
+		it('executes provided healthInfo', function() {
+			var customHealthInfo = sinon.spy();
+			healthcheck({healthInfo: customHealthInfo})(req, res, next);
+
+			customHealthInfo.should.have.been.calledOnce; 
+		});
+
+		it('renders returned json', function() {
+			var returnData = {
+				whereAmI: 'no here',
+				status: 'YES',
+				uptime: 1000,
+				memoryUsage: 1001
+			};
+
+			var customHealthInfo = function() {
+				return returnData;
+			};
+
+			healthcheck({healthInfo: customHealthInfo})(req, res, next);
+
+			res.json.should.have.been.calledWith(returnData);
+		});
+
+		describe('when error thrown', function() {
+			var uptime;
+			var memory;
+
+			beforeEach(function() {
+				uptime = 999;
+				memory = {
+					rss: 50, 
+					heapTotal: 51,
+					heapUsed: 52,
+				};
+
+				sinon.stub(process, 'uptime').returns(uptime);
+				sinon.stub(process, 'memoryUsage').returns(memory);
+			});
+
+			afterEach(function() {
+				uptime = undefined;
+				memory = undefined;
+
+				process.uptime.restore();
+				process.memoryUsage.restore();
+			});
+
+			it('responds with status 200', function() {
+				var customHealthInfo = function() {
+					throw new Error('BOOM');
+				};
+
+				healthcheck({healthInfo: customHealthInfo})(req, res, next);
+				res.status.should.have.been.calledWith(200);
+			});
+
+			
+			it('responds with json containing status:SUCCESS and warning message', function() {
+				var errorMessage = 'BOOM';
+				var expected = {
+					status: 'SUCCESS',
+					warning: util.format('%s: %s', errorMessages.HealthInfoError, errorMessage)
+				};
+
+				var customHealthInfo = function() {
+					throw new Error(errorMessage);
+				};
+
+				healthcheck({healthInfo: customHealthInfo})(req, res, next);
+				res.json.should.have.been.calledWith(expected);
+			});
+			
 		});
 
 	});

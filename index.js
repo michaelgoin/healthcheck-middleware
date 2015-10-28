@@ -47,7 +47,10 @@ module.exports = function(options) {
 			try {
 				message = healthInfo(passInfo);
 			} catch(err) {
-				message = util.format('%s: %s', errorMessages.HealthInfoError, err.message);
+				message = {
+					status: 'SUCCESS',
+					warning: util.format('%s: %s', errorMessages.HealthInfoError, err.message)
+				};
 			}
 
 			res.status(200).json(message);
