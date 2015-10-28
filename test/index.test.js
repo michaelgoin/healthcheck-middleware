@@ -15,39 +15,38 @@ chai.use(sinonChai);
 chai.should();
 
 describe('healthcheck-middleware', function() {
+	var req, res, next;
+	var uptime;
+	var memory;
+
+	beforeEach(function() {
+		res = {
+			status: sinon.stub(),
+			json: sinon.stub()
+		};
+		res.status.returns(res);
+
+		uptime = 999;
+		memory = {
+			rss: 50, 
+			heapTotal: 51,
+			heapUsed: 52,
+		};
+
+		sinon.stub(process, 'uptime').returns(uptime);
+		sinon.stub(process, 'memoryUsage').returns(memory);
+	});
+
+	afterEach(function() {
+		res = undefined;
+		uptime = undefined;
+		memory = undefined;
+
+		process.uptime.restore();
+		process.memoryUsage.restore();
+	});
 
 	describe('options', function() {
-		var req, res, next;
-		var uptime;
-		var memory;
-
-		beforeEach(function() {
-			res = {
-				status: sinon.stub(),
-				json: sinon.stub()
-			};
-			res.status.returns(res);
-
-			uptime = 999;
-			memory = {
-				rss: 50, 
-				heapTotal: 51,
-				heapUsed: 52,
-			};
-
-			sinon.stub(process, 'uptime').returns(uptime);
-			sinon.stub(process, 'memoryUsage').returns(memory);
-		});
-
-		afterEach(function() {
-			res = undefined;
-			uptime = undefined;
-			memory = undefined;
-
-			process.uptime.restore();
-			process.memoryUsage.restore();
-		});
-		
 		describe('when not provided', function() {
 			it('responds with 200 status', function() {
 				healthcheck()(req, res, next);
@@ -93,26 +92,10 @@ describe('healthcheck-middleware', function() {
 				healthcheck({})(req, res, next);
 				res.json.should.have.been.calledWith(expected);
 			});
-			
 		});
-		
 	});
 
 	describe('options.addChecks', function() {
-		var req, res, next;
-
-		beforeEach(function() {
-			res = {
-				status: sinon.stub(),
-				json: sinon.stub()
-			};
-			res.status.returns(res);
-		});
-
-		afterEach(function() {
-			res = undefined;
-		});
-
 		describe('when non-function provided', function() {
 			it('throws FunctionError', function() {
 				var check = function() {
@@ -186,29 +169,6 @@ describe('healthcheck-middleware', function() {
 		});
 
 		describe('when pass called', function() {
-			var uptime;
-			var memory;
-
-			beforeEach(function() {
-				uptime = 999;
-				memory = {
-					rss: 50, 
-					heapTotal: 51,
-					heapUsed: 52,
-				};
-
-				sinon.stub(process, 'uptime').returns(uptime);
-				sinon.stub(process, 'memoryUsage').returns(memory);
-			});
-
-			afterEach(function() {
-				uptime = undefined;
-				memory = undefined;
-
-				process.uptime.restore();
-				process.memoryUsage.restore();
-			});
-
 			it('responds with status 200', function() {
 				var customChecks = function(fail, pass) {
 					pass();
@@ -285,23 +245,7 @@ describe('healthcheck-middleware', function() {
 		});
 	});
 
-	
-
 	describe('options.healthInfo', function() {
-		var req, res, next;
-
-		beforeEach(function() {
-			res = {
-				status: sinon.stub(),
-				json: sinon.stub()
-			};
-			res.status.returns(res);
-		});
-
-		afterEach(function() {
-			res = undefined;
-		});
-
 		describe('when non-function provided', function() {
 			it('throws FunctionError', function() {
 				var check = function() {
@@ -379,29 +323,6 @@ describe('healthcheck-middleware', function() {
 		});
 
 		describe('when error thrown', function() {
-			var uptime;
-			var memory;
-
-			beforeEach(function() {
-				uptime = 999;
-				memory = {
-					rss: 50, 
-					heapTotal: 51,
-					heapUsed: 52,
-				};
-
-				sinon.stub(process, 'uptime').returns(uptime);
-				sinon.stub(process, 'memoryUsage').returns(memory);
-			});
-
-			afterEach(function() {
-				uptime = undefined;
-				memory = undefined;
-
-				process.uptime.restore();
-				process.memoryUsage.restore();
-			});
-
 			it('responds with status 200', function() {
 				var customHealthInfo = function() {
 					throw new Error('BOOM');
@@ -426,8 +347,6 @@ describe('healthcheck-middleware', function() {
 				healthcheck({healthInfo: customHealthInfo})(req, res, next);
 				res.json.should.have.been.calledWith(expected);
 			});
-			
 		});
-
 	});
 });
