@@ -8,7 +8,8 @@ var sinonChai = require('sinon-chai');
 var util = require('util');
 
 var healthcheck = require('..');
-var errorMessages = require('../errorMessages.js');
+var constants = require('../constants.js');
+var errorMessages = constants.ErrorMessages;
 
 chai.use(sinonChai);
 chai.should();
@@ -55,7 +56,7 @@ describe('healthcheck-middleware', function() {
 
 			it('responds with json containing successful status, uptime and memoryUsage', function() {
 				var expected = {
-					status: 'SUCCESS',
+					status: constants.Status.Success,
 					uptime: uptime,
 					memoryUsage: memory
 				};
@@ -84,7 +85,7 @@ describe('healthcheck-middleware', function() {
 			
 			it('responds with json containing successful status, uptime and memoryUsage', function() {
 				var expected = {
-					status: 'SUCCESS',
+					status: constants.Status.Success,
 					uptime: uptime,
 					memoryUsage: memory
 				};
@@ -144,7 +145,7 @@ describe('healthcheck-middleware', function() {
 			it('responds with json containing failure status and error message', function() {
 				var errorMessage = 'BOOM';
 				var expected = {
-					status: 'FAILURE',
+					status: constants.Status.Failure,
 					message: errorMessage
 				};
 
@@ -170,7 +171,7 @@ describe('healthcheck-middleware', function() {
 			it('responds with json containing failure status and error message from parameter', function() {
 				var errorMessage = 'BOOM';
 				var expected = {
-					status: 'FAILURE',
+					status: constants.Status.Failure,
 					message: errorMessage
 				};
 
@@ -220,7 +221,7 @@ describe('healthcheck-middleware', function() {
 			describe('without custom pass info', function() {
 				it('responds with json containing successful status, uptime and memoryUsage', function() {
 					var expected = {
-						status: 'SUCCESS',
+						status: constants.Status.Success,
 						uptime: uptime,
 						memoryUsage: memory
 					};
@@ -243,7 +244,7 @@ describe('healthcheck-middleware', function() {
 
 					var expected = {
 						custom: 'yes',
-						status: 'SUCCESS',
+						status: constants.Status.Success,
 						uptime: uptime,
 						memoryUsage: memory
 					};
@@ -414,7 +415,7 @@ describe('healthcheck-middleware', function() {
 			it('responds with json containing successful status and warning message', function() {
 				var errorMessage = 'BOOM';
 				var expected = {
-					status: 'SUCCESS',
+					status: constants.Status.Success,
 					warning: util.format('%s: %s', errorMessages.HealthInfoError, errorMessage)
 				};
 

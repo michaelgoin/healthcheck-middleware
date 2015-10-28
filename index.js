@@ -1,13 +1,13 @@
 'use strict';
 
 var util = require('util');
-var errorMessages = require('./errorMessages.js');
+var constants = require('./constants.js');
 
 module.exports = function(options) {
 	options = options || {};
 
 	if(typeof options !== 'object') {
-		throw new Error(errorMessages.InvalidOptionsError);
+		throw new Error(constants.ErrorMessages.InvalidOptionsError);
 	}
 
 	var addChecks = options.addChecks || function (fail, pass) {
@@ -19,11 +19,11 @@ module.exports = function(options) {
 	};
 
 	if(typeof addChecks !== 'function') {
-		throw new Error(util.format('%s: %s', errorMessages.FunctionError, 'addChecks'));
+		throw new Error(util.format('%s: %s', constants.ErrorMessages.FunctionError, 'addChecks'));
 	}
 
 	if(typeof healthInfo !== 'function') {
-		throw new Error(util.format('%s: %s', errorMessages.FunctionError, 'healthInfo'));
+		throw new Error(util.format('%s: %s', constants.ErrorMessages.FunctionError, 'healthInfo'));
 	}
 
 	return function(req, res) {
@@ -34,12 +34,12 @@ module.exports = function(options) {
 		}
 
 		function onFail(err) {
-			res.status(500).json({status: 'FAILURE', message: err.message});
+			res.status(500).json({status: constants.Status.Failure, message: err.message});
 		}
 
 		function onPass(passInfo) {
 			passInfo = passInfo || {};
-			passInfo.status = passInfo.status || 'SUCCESS';
+			passInfo.status = passInfo.status || constants.Status.Success;
 			passInfo.uptime = passInfo.uptime || process.uptime();
 			passInfo.memoryUsage = passInfo.memoryUsage || process.memoryUsage();
 
@@ -53,8 +53,8 @@ module.exports = function(options) {
 
 			} catch(err) {
 				info = {
-					status: 'SUCCESS',
-					warning: util.format('%s: %s', errorMessages.HealthInfoError, err.message)
+					status: constants.Status.Success,
+					warning: util.format('%s: %s', constants.ErrorMessages.HealthInfoError, err.message)
 				};
 			}
 
