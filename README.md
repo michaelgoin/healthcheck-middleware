@@ -8,16 +8,17 @@ $ npm install healthcheck-middleware
 var healthcheck = require('healthcheck-middleware');
 ```
 ## healthcheck([options])
-Returns healthcheck middleware using the given options. The middleware will return a JSON response with status 200 on success or status 500 on failure (see addChecks).
+Returns healthcheck middleware using the given options. The middleware will return a JSON response with status 200 on success or status 500 on `addChecks` failure (see addChecks).
 
 ```js
 app.use('/healthcheck', healthcheck());
 ```
+> {status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}
 
 ## options
 These properties can be passed as a part of the `options` object:
-* addChecks
-* healthInfo
+* `addChecks`
+* `healthInfo`
 
 ### addChecks
 A function that allows the addition of checks to the healthcheck. The function is called as `addChecks(fail, pass)`. You will call `fail()` or `pass()` depending on your desired state.
@@ -77,10 +78,9 @@ pass({database: databaseInfo});
 > {database: {region: 'us-west', status: 'ACTIVE'}, status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}
 
 ### healthInfo
-A function that allows customization of the displayed health information. The function is called as `healthInfo(passInfo)`. `passInfo` contains the health information that would normally be displayed (see examples above). You will return the JSON representation of the health info you want rendered. You may also return a string which will be converted into a JSON object `{message: string}`.
+A function that allows customization of the displayed health information. The function is called as `healthInfo(passInfo)`. The `passInfo` parameter contains the health information that would normally be displayed (see examples above). You will return the JSON representation of the health info you want rendered. You may also return a string which will be converted into a JSON object `{message: string}`.
 
 ##### Example 1
-
 ```js
 module.exports = healthcheck({
 	healthInfo: function(passInfo) {
@@ -95,7 +95,16 @@ module.exports = healthcheck({
 > {status: 'success', server: 'theServer', version: '1.0.0'}
 
 ##### Example 2
+```js
+module.exports = healthcheck({
+	healthInfo: function(passInfo) {
+		return 'This is not particularly helpful.'
+	}
+});
+```
+> {message: 'This isn't particularly helpful.'}
 
+### All Options Example
 ```js
 module.exports = healthcheck({
 	addChecks: function(fail, pass) {
@@ -120,15 +129,3 @@ module.exports = healthcheck({
 });
 ```
 > {status: 'success', server: 'theServer', version: '1.0.0', databaseRegion: 'us-west', databaseStatus: 'ACTIVE'}
-
-##### Example 3
-
-```js
-module.exports = healthcheck({
-	healthInfo: function(passInfo) {
-		return 'This is not particularly helpful.'
-	}
-});
-```
-> {message: 'This isn't particularly helpful.'}
-
