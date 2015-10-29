@@ -15,7 +15,9 @@ app.use('/healthcheck', healthcheck());
 ```
 
 ## options
-These properties can be passed as a part of the `options` object.
+These properties can be passed as a part of the `options` object:
+* addChecks
+* healthInfo
 
 ### addChecks
 A function that allows the addition of checks to the healthcheck. The function is called as `addChecks(fail, pass)`. You will call `fail()` or `pass()` depending on your desired state.
@@ -43,13 +45,13 @@ Call `fail()` when the intent is the for the healthcheck to fail. Fail accepts a
 ```js
 fail();
 ```
->{status: 'failure'}
+> {status: 'failure'}
 
 ##### Example 2
 ```js
 fail(new Error('some error'));
 ```
->{status: 'failure', message: 'some error'}
+> {status: 'failure', message: 'some error'}
 
 
 #### pass
@@ -61,16 +63,72 @@ If you return properties called status, uptime or memoryUsage they will override
 ```js
 pass();
 ```
->{status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}
+> {status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}
 
 ##### Example 2
 ```js
 var databaseInfo = {
-	region: 'us-east',
+	region: 'us-west',
 	status: 'ACTIVE'
 };
 
 pass({database: databaseInfo});
 ```
->{database: {region: 'us-east', status: 'ACTIVE'}, status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}
+> {database: {region: 'us-west', status: 'ACTIVE'}, status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}
+
+### healthInfo
+A function that allows customization of the displayed health information. The function is called as `healthInfo(passInfo)`. `passInfo` contains the health information that would normally be displayed (see examples above). You will return the JSON representation of the health info you want rendered. You may also return a string which will be converted into a JSON object `{message: string}`.
+
+##### Example 1
+
+```js
+module.exports = healthcheck({
+	healthInfo: function(passInfo) {
+		return {
+			status: passInfo.status,
+			server: os.hostname(),
+			version: process.env.APP_VERSION
+		};
+	}
+});
+```
+> {status: 'success', server: 'theServer', version: '1.0.0'}
+
+##### Example 2
+
+```js
+module.exports = healthcheck({
+	addChecks: function(fail, pass) {
+		store.getDatabaseInfoAsync()
+		.then(function(databaseInfo) {
+			pass(databaseInfo);
+		})
+		.catch(function() {
+			fail(new Error('could not connect to database'));
+		});
+	},
+
+	healthInfo: function(passInfo) {
+		return {
+			status: passInfo.status,
+			server: os.hostname(),
+			version: process.env.APP_VERSION,
+			databaseRegion: passInfo.database.region,
+			databaseStatus: passInfo.database.status
+		};
+	}
+});
+```
+> {status: 'success', server: 'theServer', version: '1.0.0', databaseRegion: 'us-west', databaseStatus: 'ACTIVE'}
+
+##### Example 3
+
+```js
+module.exports = healthcheck({
+	healthInfo: function(passInfo) {
+		return 'This is not particularly helpful.'
+	}
+});
+```
+> {message: 'This isn't particularly helpful.'}
 
