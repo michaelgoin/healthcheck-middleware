@@ -57,13 +57,13 @@ Call `pass()` when the intent is for the healthcheck to pass. Pass can be called
 
 If you return properties called status, uptime or memoryUsage they will override the standard values returned.
 
-**Example 1**
+##### Example 1
 ```js
 pass();
 ```
 `{status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}`
 
-**Example 2**
+##### Example 2
 ```js
 var databaseInfo = {
 	region: 'us-east',
