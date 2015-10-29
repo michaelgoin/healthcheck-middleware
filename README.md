@@ -43,13 +43,13 @@ Call `fail()` when the intent is the for the healthcheck to fail. Fail accepts a
 ```js
 fail();
 ```
-`{status: 'failure'}`
+>{status: 'failure'}
 
 ##### Example 2
 ```js
 fail(new Error('some error'));
 ```
-`{status: 'failure', message: 'some error'}`
+>{status: 'failure', message: 'some error'}
 
 
 #### pass
