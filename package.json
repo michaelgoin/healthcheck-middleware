@@ -1,6 +1,6 @@
 {
   "name": "healthcheck-middleware",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Express middleware for rendering a JSON healthcheck page.",
   "main": "index.js",
   "scripts": {
