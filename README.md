@@ -108,7 +108,7 @@ module.exports = healthcheck({
 	}
 });
 ```
-> {message: 'This isn't particularly helpful.'}
+> {message: 'This is not particularly helpful.'}
 
 ### All Options Example
 ```js
