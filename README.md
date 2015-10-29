@@ -2,7 +2,7 @@
 Express middleware for rendering a JSON healthcheck page. Provides simple default functionality, ability to add additional checks and ability to change displayed health info.
 
 ```bash
-$ npm install compression
+$ npm install healthcheck-middleware
 ```
 ```js
 var healthcheck = require('healthcheck-middleware');
@@ -61,7 +61,7 @@ If you return properties called status, uptime or memoryUsage they will override
 ```js
 pass();
 ```
-`{status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}`
+>{status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}
 
 ##### Example 2
 ```js
@@ -72,5 +72,5 @@ var databaseInfo = {
 
 pass({database: databaseInfo});
 ```
-`{database: {region: 'us-east', status: 'ACTIVE'}, status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}`
+>{database: {region: 'us-east', status: 'ACTIVE'}, status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}
 
