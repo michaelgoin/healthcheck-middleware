@@ -86,7 +86,7 @@ pass({status: 'WORKED!'});
 ### healthInfo
 A function that allows customization of the displayed health information. The function is called as `healthInfo(passInfo)`. The `passInfo` parameter contains the health information that would normally be displayed (see examples above). You will return the JSON representation of the health info you want rendered. You may also return a string which will be converted into a JSON object `{message: string}`.
 
-Healthcheck will still result in a status 200 if an Error is thrown inside of `healthInfo`. It will return a successful status with a warning message that includes the error message.
+Healthcheck will still result in a status 200 if an Error is thrown inside of `healthInfo`. It will return a successful status with a warning that includes the error message.
 
 ##### Example 1
 ```js
