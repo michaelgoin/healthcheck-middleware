@@ -150,22 +150,38 @@ describe('healthcheck-middleware', function() {
 				healthcheck({addChecks: customChecks})(req, res, next);
 				res.status.should.have.been.calledWith(500);
 			});
-			
-			it('responds with json containing failure status and error message from parameter', function() {
-				var errorMessage = 'BOOM';
-				var expected = {
-					status: constants.Status.Failure,
-					message: errorMessage
-				};
 
-				var customChecks = function(fail) {
-					fail(new Error(errorMessage));
-				};
+			describe('without error', function() {
+				it('responds with json containing only failure status', function() {
+					var expected = {
+						status: constants.Status.Failure
+					};
 
-				healthcheck({addChecks: customChecks})(req, res, next);
-				res.json.should.have.been.calledWith(expected);
+					var customChecks = function(fail) {
+						fail();
+					};
+
+					healthcheck({addChecks: customChecks})(req, res, next);
+					res.json.should.have.been.calledWith(expected);
+				});
 			});
-			
+
+			describe('with error', function() {
+				it('responds with json containing failure status and error message', function() {
+					var errorMessage = 'BOOM';
+					var expected = {
+						status: constants.Status.Failure,
+						message: errorMessage
+					};
+
+					var customChecks = function(fail) {
+						fail(new Error(errorMessage));
+					};
+
+					healthcheck({addChecks: customChecks})(req, res, next);
+					res.json.should.have.been.calledWith(expected);
+				});
+			});
 		});
 
 		describe('when pass called', function() {

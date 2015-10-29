@@ -34,7 +34,15 @@ module.exports = function(options) {
 		}
 
 		function onFail(err) {
-			res.status(500).json({status: constants.Status.Failure, message: err.message});
+			var failureInfo = {
+				status: constants.Status.Failure
+			};
+
+			if(err) {
+				failureInfo.message = err.message;
+			}
+
+			res.status(500).json(failureInfo);
 		}
 
 		function onPass(passInfo) {
