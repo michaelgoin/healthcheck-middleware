@@ -122,7 +122,7 @@ module.exports = healthcheck({
 ```
 > {status: 'success', warning: 'Healthcheck passed but there was an error in healthInfo: format fail'}
 
-### All Options Example
+### Full Example
 ```js
 module.exports = healthcheck({
 	addChecks: function(fail, pass) {
