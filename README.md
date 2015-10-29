@@ -56,7 +56,7 @@ fail(new Error('some error'));
 
 
 #### pass
-Call `pass()` when the intent is for the healthcheck to pass. Pass can be called empty or with a JSON object that specifies additional properties to display with the health information. Calling pass will result in a status 200 and JSON message that indicates success, process.uptime(), process.memoryUsage(), and any custom properties.
+Call `pass()` when the intent is for the healthcheck to pass. Pass can be called with a JSON object that specifies additional properties to display with the health information. Calling pass will result in a status 200 and JSON message that indicates success, process.uptime(), process.memoryUsage(), and any custom properties.
 
 If you return properties called status, uptime or memoryUsage they will override the standard values returned.
 
@@ -76,6 +76,12 @@ var databaseInfo = {
 pass({database: databaseInfo});
 ```
 > {database: {region: 'us-west', status: 'ACTIVE'}, status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}
+
+##### Example 3
+```js
+pass({status: 'WORKED!'});
+```
+> {status: 'WORKED!', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}
 
 ### healthInfo
 A function that allows customization of the displayed health information. The function is called as `healthInfo(passInfo)`. The `passInfo` parameter contains the health information that would normally be displayed (see examples above). You will return the JSON representation of the health info you want rendered. You may also return a string which will be converted into a JSON object `{message: string}`.
