@@ -43,23 +43,31 @@ module.exports = healthcheck({
 ##### fail
 Call `fail()` when the intent is the for the healthcheck to fail. Fail accepts an Error as an argument. Calling fail will result in a status 500 and a JSON message indicating failure with the error message.
 
+**Example 1**
+```js
+fail();
+```
+`{status: 'failure'}`
+
+**Example 2**
 ```js
 fail(new Error('some error'));
 ```
+`{status: 'failure', message: 'some error'}`
 
-Expected Result: {status: failure, message: 'some error'}
 
 ##### pass
-Call `pass()` when the intent is for the healcheck to pass. Pass can be called empty or with a JSON object that specifies additional properties to display with the health information. Call pass will result in a status 200 and JSON message that indicates success, process.uptime(), process.memoryUsage(), and any custom properties.
+Call `pass()` when the intent is for the healthcheck to pass. Pass can be called empty or with a JSON object that specifies additional properties to display with the health information. Calling pass will result in a status 200 and JSON message that indicates success, process.uptime(), process.memoryUsage(), and any custom properties.
 
 If you return properties called status, uptime or memoryUsage they will override the standard values returned.
 
+**Example 1**
 ```js
 pass();
 ```
+`{status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}`
 
-Expected Result: {status: success, uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}
-
+**Example 2**
 ```js
 var databaseInfo = {
 	region: 'us-east',
@@ -68,6 +76,5 @@ var databaseInfo = {
 
 pass({database: databaseInfo});
 ```
-
-Expected Result: {database: {region: 'us-east', status: 'ACTIVE'} status: success, uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}
+`{database: {region: 'us-east', status: 'ACTIVE'} status: 'success', uptime: 3, memoryUsage: {rss: 32587776, heapTotal: 29604500, heapUsed: 14572104}}`
 
