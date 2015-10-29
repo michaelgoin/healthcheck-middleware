@@ -2,3 +2,4 @@ test
 Gruntfile.js
 .jscsrc
 .jshintrc
+.travis.yml
