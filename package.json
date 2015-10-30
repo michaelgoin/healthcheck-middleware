@@ -14,7 +14,8 @@
     "healthcheck",
     "express",
     "middleware",
-    "node"
+    "node",
+    "connect"
   ],
   "author": "Michael Goin",
   "license": "MIT",
