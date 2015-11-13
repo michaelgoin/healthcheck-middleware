@@ -1,5 +1,5 @@
 # healthcheck-middleware
-[![Build Status](https://travis-ci.org/abandoncomplexity/healthcheck-middleware.svg?branch=master)](https://travis-ci.org/abandoncomplexity/healthcheck-middleware)
+[![Build Status](https://travis-ci.org/michaelgoin/healthcheck-middleware.svg?branch=master)](https://travis-ci.org/michaelgoin/healthcheck-middleware)
 
 Express middleware for rendering a JSON healthcheck page. Provides default functionality, ability to add additional checks and ability to change displayed health info.
 
